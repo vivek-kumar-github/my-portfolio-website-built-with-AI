@@ -1,3 +1,12 @@
+/* When mobile nav is open, make header match the nav background for consistency */
+body.nav-open .site-header {
+  background: var(--bg-elev);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
 /* Base variables */
 :root {
   --bg: #0b1020;
@@ -84,7 +93,6 @@ body {
   background: color-mix(in oklab, var(--bg-elev) 92%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
-  height: var(--header-h);
 }
 .header-inner { display: flex; align-items: center; justify-content: space-between; padding: .9rem 0; }
 .brand { display: inline-flex; align-items: center; gap: .6rem; color: inherit; text-decoration: none; }
@@ -99,6 +107,15 @@ body {
 .site-nav a { color: var(--text); text-decoration: none; opacity: .9; }
 .site-nav a:hover { opacity: 1; color: var(--primary); }
 .nav-actions { display: flex; align-items: center; gap: .6rem; }
+
+/* Lock scrolling and layout when mobile nav is open */
+body.nav-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  touch-action: none;
+  overscroll-behavior: none;
+}
 
 /* Buttons */
 .btn { appearance: none; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text);
@@ -330,29 +347,29 @@ section[id] { scroll-margin-top: 80px; }
   .skills-grid { grid-template-columns: repeat(2, 1fr); }
   .projects-grid { grid-template-columns: 1fr; }
   .about-quick { grid-template-columns: 1fr 1fr 1fr; }
-}
 
-@media (max-width: 720px) {
-  .site-nav { 
-    position: fixed; 
-    top: var(--header-h, 60px);
+  .site-nav {
+    position: absolute; /* Changed from fixed to work within sticky header */
+    top: 100%; /* Position it right below the header */
     left: 0;
     right: 0;
-    bottom: 0;
-    background: color-mix(in oklab, var(--bg-elev) 95%, transparent); 
-    border-top: 1px solid var(--border); 
-    flex-direction: column; 
-    padding: 2rem 1rem; 
-    transform: translateY(-100%); 
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(20px);
-    z-index: 99;
-    overflow-y: auto;
-    pointer-events: none; /* prevent accidental interaction when closed */
+    height: auto; /* Let content define height */
+    background: var(--bg-elev);
+    flex-direction: column;
+    padding: 0.75rem 1rem env(safe-area-inset-bottom);
+    transform: translateY(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: -1; /* Positioned behind the header content */
+    pointer-events: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    visibility: hidden; /* Hide when closed */
   }
-  .site-nav.open { 
-    transform: translateY(0); 
+  .site-nav.open {
+    transform: translateY(0);
     pointer-events: auto;
+    visibility: visible; /* Show when open */
   }
   .site-nav ul { 
     flex-direction: column; 
@@ -362,9 +379,9 @@ section[id] { scroll-margin-top: 80px; }
     width: 100%;
   }
   .site-nav a {
-    font-size: 1.2rem;
-    font-weight: 500;
-    padding: 0.75rem 1.5rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    padding: 0.9rem 1.25rem;
     border-radius: 0.75rem;
     transition: all 0.2s ease;
     width: 100%;
@@ -381,9 +398,10 @@ section[id] { scroll-margin-top: 80px; }
     margin-top: auto;
     padding-top: 1rem;
   }
-  .nav-toggle { 
-    display: inline-block; 
-    z-index: 100;
+  .nav-toggle {
+    display: inline-block;
+    position: relative;
+    z-index: 1; /* Ensure toggle is clickable */
   }
   
   /* Hamburger animation */

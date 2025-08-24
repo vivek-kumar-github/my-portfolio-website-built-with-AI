@@ -63,7 +63,8 @@
   }
 
   // Keep ARIA state in sync so nav is only exposed on mobile when open
-  const mobileMQ = window.matchMedia('(max-width: 720px)');
+  // Match CSS breakpoint for mobile overlay nav
+  const mobileMQ = window.matchMedia('(max-width: 900px)');
   function updateNavAria() {
     if (!nav) return;
     const isMobile = mobileMQ.matches;
@@ -84,6 +85,8 @@
     // Toggle mobile menu
     navToggle.addEventListener('click', (e) => {
       e.preventDefault();
+      // Ensure header height is up-to-date before opening
+      setHeaderHeightVar();
       const open = nav.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', String(open));
       navToggle.classList.toggle('open');
@@ -92,6 +95,7 @@
       // Prevent body scroll when menu is open
       if (open) {
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('nav-open');
         // Save last focused element and move focus into the menu
         lastFocusedBeforeMenu = document.activeElement;
         startFocusTrap();
@@ -100,6 +104,7 @@
         if (first) first.focus();
       } else {
         document.body.style.overflow = '';
+        document.body.classList.remove('nav-open');
         stopFocusTrap();
         // Restore focus to the toggle for context
         navToggle.focus();
@@ -113,8 +118,13 @@
         navToggle.classList.remove('open');
         navToggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
+        document.body.classList.remove('nav-open');
+        stopFocusTrap();
+        updateNavAria();
       });
     });
+
+    // No separate close button; hamburger toggles both open and close
     
     // Close on escape key
     document.addEventListener('keydown', (e) => {
@@ -123,6 +133,8 @@
         navToggle.classList.remove('open');
         navToggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
+        document.body.classList.remove('nav-open');
+        document.body.classList.remove('ios-scroll-lock'); // Remove body class when menu is closed
         stopFocusTrap();
         navToggle.focus();
         updateNavAria();
@@ -138,6 +150,7 @@
         navToggle.classList.remove('open');
         navToggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
+        document.body.classList.remove('nav-open');
         stopFocusTrap();
         navToggle.focus();
         updateNavAria();
@@ -251,6 +264,11 @@
   const onResize = debounce(() => { setHeaderHeightVar(); updateNavAria(); }, 200);
   window.addEventListener('resize', onResize);
   mobileMQ.addEventListener ? mobileMQ.addEventListener('change', updateNavAria) : mobileMQ.addListener(updateNavAria);
+  // Recompute after fonts and full load to avoid partial panel height on mobile
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => setHeaderHeightVar());
+  }
+  window.addEventListener('load', () => setHeaderHeightVar());
 })();
 
 
